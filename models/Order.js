@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    daily_order_number: { type: Number },
+    daily_order_number: { type: Number, index: true }, // tez qidirish uchun index
     order_date: { type: String },
     table_id: { type: String },
     user_id: { type: String },
@@ -19,13 +19,14 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "completed", "cancelled"],
       default: "pending",
+      index: true, // status bo‘yicha tez filtr
     },
     total_price: { type: Number, default: 0 },
     waiter_percentage: { type: Number, default: 0 },
     service_amount: { type: Number, default: 0 },
     tax_amount: { type: Number, default: 0 },
     final_total: { type: Number, default: 0 },
-    completedAt: Date,
+    completedAt: { type: Date, index: true },
     completedBy: String,
     paymentAmount: { type: Number, default: 0 },
     changeAmount: { type: Number, default: 0 },
@@ -33,9 +34,15 @@ const orderSchema = new mongoose.Schema(
     receiptPrinted: { type: Boolean, default: false },
     closedAt: Date,
     table_number: String,
-    waiter_name: String,
+    waiter_name: { type: String, index: true }, // afitsant bo‘yicha qidirish tezlashadi
   },
   { timestamps: true }
 );
+
+// createdAt bo‘yicha sort uchun index
+orderSchema.index({ createdAt: -1 });
+
+// status + createdAt kombinatsiya index (aggregate uchun juda foydali)
+orderSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = orderSchema;
